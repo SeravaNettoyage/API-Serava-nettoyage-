@@ -21,18 +21,51 @@ class TranslatorService:
     def __init__(self, llm: LLMClient):
         self.llm = llm
 
-    def _normalize_request_type(self, data: dict) -> dict:
-        value = data.get("request_type")
-        if isinstance(value, str):
-            normalized = REQUEST_TYPE_ALIASES.get(value.strip().lower(), value.strip().lower())
-            data["request_type"] = normalized
+    def _ensure_dict(self, value):
+        return value if isinstance(value, dict) else {}
+
+    def _ensure_list_of_strings(self, value):
+        if not isinstance(value, list):
+            return []
+        return [str(x) for x in value if x is not None]
+
+    def _ensure_bool(self, value):
+        return bool(value)
+
+    def _normalize_request_type(self, value: str) -> str:
+        if not isinstance(value, str):
+            return "case_resolution"
+        normalized = value.strip().lower()
+        return REQUEST_TYPE_ALIASES.get(normalized, normalized)
+
+    def _normalize_result(self, data: dict, source_text: str, actor_role: str, validation_level: str) -> dict:
+        if not isinstance(data, dict):
+            data = {}
+
+        data["request_type"] = self._normalize_request_type(data.get("request_type"))
+        data["actor_role"] = data.get("actor_role") if isinstance(data.get("actor_role"), str) else actor_role
+        data["validation_level"] = (
+            data.get("validation_level") if isinstance(data.get("validation_level"), str) else validation_level
+        )
+        data["source_text"] = data.get("source_text") if isinstance(data.get("source_text"), str) else source_text
+        data["needs_clarification"] = self._ensure_bool(data.get("needs_clarification", False))
+        data["clarifying_questions"] = self._ensure_list_of_strings(data.get("clarifying_questions", []))
+        data["entities"] = self._ensure_dict(data.get("entities", {}))
+        data["proposed_payload"] = self._ensure_dict(data.get("proposed_payload", {}))
+        data["context"] = self._ensure_dict(data.get("context", {}))
+
         return data
 
     async def translate(self, data: TranslateRequest) -> GovernorRequest:
         prompt = load_prompt("translator")
         user_prompt = json.dumps(data.model_dump(mode="json"), ensure_ascii=False)
         result = await self.llm.chat_json(prompt, user_prompt, settings.llm_model_translate)
-        result = self._normalize_request_type(result)
+        result = self._normalize_result(
+            result,
+            source_text=data.free_text,
+            actor_role=data.actor_role,
+            validation_level=data.validation_level,
+        )
         return GovernorRequest.model_validate(result)
 
     async def clarify(self, data: ClarifyRequest) -> dict:
