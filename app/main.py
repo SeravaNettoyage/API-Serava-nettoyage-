@@ -8,7 +8,6 @@ from fastapi.responses import ORJSONResponse
 from app.api.routes import router
 from app.core.settings import settings
 
-
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
@@ -37,8 +36,12 @@ def create_app() -> FastAPI:
         response.headers["X-Process-Time-Ms"] = str(duration_ms)
         return response
 
+    @app.get("/")
+    async def root():
+        return {"message": "Serava API running"}
+
     app.include_router(router)
     return app
 
-
 app = create_app()
+    
