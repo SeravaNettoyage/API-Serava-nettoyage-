@@ -1,0 +1,37 @@
+openapi: 3.1.0
+info:
+  title: Serava Governor Backend
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        '200':
+          description: OK
+  /translate:
+    post:
+      summary: Translate natural language into governor JSON
+      responses:
+        '200':
+          description: Governor request object
+  /clarify:
+    post:
+      summary: Ask blocking questions for incomplete requests
+      responses:
+        '200':
+          description: Clarification object
+  /governor/execute:
+    post:
+      summary: Execute a structured governor request
+      responses:
+        '200':
+          description: Governor execution response
+  /reformulate:
+    post:
+      summary: Reformulate technical governor output for a target audience
+      responses:
+        '200':
+          description: Reformulated text
