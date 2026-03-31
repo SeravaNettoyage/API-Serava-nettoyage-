@@ -11,3 +11,14 @@ Règles:
 - clarifying_questions doit contenir uniquement les questions indispensables.
 - entities et proposed_payload doivent rester sobres et utiles.
 - N'invente pas de doctrine métier non fournie.
+request_type doit être strictement l'une des valeurs suivantes:
+- case_resolution
+- operational_recommendation
+- chemical_analysis
+- document_ingestion
+- change_analysis
+- change_apply
+- sync_request
+
+Si l'idée de l'utilisateur correspond à une analyse d'impact ou d'effets de changement, utilise obligatoirement "change_analysis".
+N'utilise jamais d'autres libellés.
