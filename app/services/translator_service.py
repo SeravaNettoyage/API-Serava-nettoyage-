@@ -1,4 +1,5 @@
 import json
+import re
 
 from app.core.settings import settings
 from app.models.contracts import GovernorRequest, TranslateRequest, ClarifyRequest, ReformulateRequest
@@ -14,6 +15,18 @@ REQUEST_TYPE_ALIASES = {
     "case_analysis": "case_resolution",
     "chemical_review": "chemical_analysis",
     "document_analysis": "document_ingestion",
+}
+
+REFORMULATION_REPLACEMENTS = {
+    "pourle": "pour le",
+    "materiaux": "matériaux",
+    "methodes": "méthodes",
+    "produits": "produits",
+    "decision_rules": "règles de décision",
+    "validation_status": "statut de validation",
+    "change_log": "journal des changements",
+    "rerun": "relance",
+    "reruns": "relances",
 }
 
 
@@ -56,6 +69,33 @@ class TranslatorService:
 
         return data
 
+    def _clean_reformulated_text(self, text: str) -> str:
+        if not isinstance(text, str):
+            return ""
+
+        for source, replacement in REFORMULATION_REPLACEMENTS.items():
+            text = text.replace(source, replacement)
+
+        text = re.sub(r"[ \t]+", " ", text)
+        text = re.sub(r" *\n *", "\n", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+
+        # Corrections ciblées de formulation
+        text = text.replace(
+            "Les mutations sont désactivées par la politique actuelle.",
+            "Les mutations sont désactivées par la politique actuelle.",
+        )
+        text = text.replace(
+            "La politique de mutations n'autorise pas les mutations.",
+            "Les mutations sont désactivées par la politique actuelle.",
+        )
+        text = text.replace(
+            "Tests à relancer : relance.",
+            "Tests à relancer :",
+        )
+
+        return text.strip()
+
     async def translate(self, data: TranslateRequest) -> GovernorRequest:
         prompt = load_prompt("translator")
         user_prompt = json.dumps(data.model_dump(mode="json"), ensure_ascii=False)
@@ -77,4 +117,5 @@ class TranslatorService:
         prompt = load_prompt("reformulator")
         user_prompt = json.dumps(data.model_dump(mode="json"), ensure_ascii=False)
         text = await self.llm.chat_text(prompt, user_prompt, settings.llm_model_reformulate)
+        text = self._clean_reformulated_text(text)
         return {"text": text}
