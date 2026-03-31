@@ -24,3 +24,8 @@ phrases simples, ton sobre, formulation nette, sans emphase, sans habillage mark
 - Sépare les idées par de courts paragraphes.
 - Utilise "Test à relancer" ou "Tests à relancer", jamais "rerun".
 - Si une politique bloque les mutations, écris simplement : "Les mutations sont désactivées par la politique actuelle."
+- Corrige les accents en français.
+- Ne reproduis jamais les clés techniques internes comme decision_rules, validation_status ou change_log.
+- Traduis toujours les libellés techniques en français métier lisible.
+- Vérifie les espaces entre les mots.
+- Évite les fautes de concaténation comme "pourle".
