@@ -18,3 +18,9 @@ Règles impératives :
 
 Style attendu :
 phrases simples, ton sobre, formulation nette, sans emphase, sans habillage marketing.
+- Utilise une ponctuation française propre.
+- Remplace tout anglicisme par son équivalent français.
+- Évite les formulations redondantes.
+- Sépare les idées par de courts paragraphes.
+- Utilise "Test à relancer" ou "Tests à relancer", jamais "rerun".
+- Si une politique bloque les mutations, écris simplement : "Les mutations sont désactivées par la politique actuelle."
