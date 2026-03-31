@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import APIKeyHeader
 
 from app.core.settings import settings
 from app.models.contracts import (
@@ -21,8 +22,10 @@ supabase_service = SupabaseService()
 translator_service = TranslatorService(llm_client)
 governor_service = GovernorService(supabase_service)
 
+api_key_scheme = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-def require_api_key(x_api_key: str | None = Header(default=None, alias="X-API-Key")) -> None:
+
+def require_api_key(api_key: str | None = Depends(api_key_scheme)) -> None:
     expected_key = settings.internal_api_key
 
     if not expected_key:
@@ -31,16 +34,11 @@ def require_api_key(x_api_key: str | None = Header(default=None, alias="X-API-Ke
             detail="Clé API interne non configurée sur le serveur.",
         )
 
-    if x_api_key != expected_key:
+    if api_key != expected_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Clé API invalide ou absente.",
         )
-
-
-@router.get("/", tags=["system"])
-async def root() -> dict:
-    return {"message": "Serava API running"}
 
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
