@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Serava Governor Backend
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        "200":
+          description: OK
+  /translate:
+    post:
+      summary: Translate request
+      responses:
+        "200":
+          description: OK
+  /clarify:
+    post:
+      summary: Clarify request
+      responses:
+        "200":
+          description: OK
+  /governor/execute:
+    post:
+      summary: Execute governor request
+      responses:
+        "200":
+          description: OK
+  /reformulate:
+    post:
+      summary: Reformulate response
+      responses:
+        "200":
+          description: OK
