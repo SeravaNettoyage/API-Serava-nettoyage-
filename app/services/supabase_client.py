@@ -59,6 +59,10 @@ class SupabaseService:
             self.client.schema(settings.supabase_schema).table("knowledge_rules").insert(rows).execute()
 
     def search_book_chunks_ilike(self, book_id: str, terms: list[str], top_k: int) -> list[dict[str, Any]]:
+        """
+        Recherche par mots-clés (MVP) dans les chunks d'un livre.
+        Note: Cette implémentation est textuelle (ILike-like en Python) et non sémantique/vectorielle.
+        """
         if not self.enabled or self.client is None:
             raise RuntimeError("Supabase non configuré")
         result = (
@@ -80,6 +84,10 @@ class SupabaseService:
         return [row for _, row in scored[:top_k]]
 
     def search_knowledge_rules_ilike(self, book_id: str, terms: list[str], top_k: int) -> list[dict[str, Any]]:
+        """
+        Recherche par mots-clés (MVP) dans les règles extraites.
+        Note: Cette implémentation est textuelle (ILike-like en Python) et non sémantique/vectorielle.
+        """
         if not self.enabled or self.client is None:
             raise RuntimeError("Supabase non configuré")
         result = (

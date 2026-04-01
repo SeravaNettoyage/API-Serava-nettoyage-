@@ -1,35 +1,101 @@
 openapi: 3.1.0
 info:
   title: Serava Governor Backend
-  version: 1.0.0
+  version: 1.1.0
+  description: API pour le moteur de gouvernance Serava avec moteur de connaissance documentaire intégré.
 paths:
   /health:
     get:
+      tags: [system]
       summary: Healthcheck
       responses:
         "200":
           description: OK
   /translate:
     post:
-      summary: Translate request
+      tags: [governor]
+      summary: Traduire une demande libre en contrat gouverneur
+      security:
+        - ApiKeyAuth: []
       responses:
         "200":
           description: OK
   /clarify:
     post:
-      summary: Clarify request
+      tags: [governor]
+      summary: Demander des clarifications sur une requête incomplète
+      security:
+        - ApiKeyAuth: []
       responses:
         "200":
           description: OK
   /governor/execute:
     post:
-      summary: Execute governor request
+      tags: [governor]
+      summary: Exécuter une décision de gouvernance (avec RAG documentaire si book_id présent)
+      security:
+        - ApiKeyAuth: []
       responses:
         "200":
           description: OK
   /reformulate:
     post:
-      summary: Reformulate response
+      tags: [governor]
+      summary: Reformuler une sortie JSON en langage naturel métier
+      security:
+        - ApiKeyAuth: []
       responses:
         "200":
           description: OK
+  /books/upload:
+    post:
+      tags: [books]
+      summary: Uploader un PDF pour ingestion et découpage (chunking)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                author:
+                  type: string
+      responses:
+        "200":
+          description: OK
+  /books/{book_id}/extract:
+    post:
+      tags: [books]
+      summary: Extraire les règles de connaissance structurées depuis les chunks d'un livre
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: book_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /knowledge/search:
+    post:
+      tags: [books]
+      summary: Rechercher des chunks ou des règles dans la base documentaire
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

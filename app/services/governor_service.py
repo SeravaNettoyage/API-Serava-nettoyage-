@@ -25,11 +25,15 @@ class GovernorService:
         retrieval_context: dict = {"chunks": [], "rules": []}
 
         if book_id and self.supabase.enabled:
-            retrieval_context = self.retrieval_service.search(
-                book_id=book_id,
-                query=payload.source_text or json.dumps(payload.proposed_payload, ensure_ascii=False),
-                top_k=settings.retrieval_default_top_k,
-            )
+            try:
+                retrieval_context = self.retrieval_service.search(
+                    book_id=book_id,
+                    query=payload.source_text or json.dumps(payload.proposed_payload, ensure_ascii=False),
+                    top_k=settings.retrieval_default_top_k,
+                )
+            except Exception as e:
+                # Fallback: log error but continue without retrieval
+                retrieval_context = {"chunks": [], "rules": [], "error": str(e)}
 
         if payload.needs_clarification or payload.clarifying_questions:
             response = GovernorExecutionResponse(
