@@ -57,6 +57,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `POST /translate` : Traduction en contrat
 - `POST /governor/execute` : Exécution (ajoutez `book_id` dans `context` pour le RAG)
 - `POST /books/upload` : Ingestion de PDF
+- `POST /books/{book_id}/extract` : Extraction des règles de connaissance
 - `POST /knowledge/search` : Recherche dans la base
 
 ## Configuration (Variables clés)
