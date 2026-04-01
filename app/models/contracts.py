@@ -77,3 +77,36 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class BookCreateResponse(BaseModel):
+    book_id: str
+    status: str
+    filename: str
+    chunks_created: int
+
+
+class ExtractKnowledgeResponse(BaseModel):
+    book_id: str
+    chunks_processed: int
+    rules_created: int
+    status: str
+
+
+class KnowledgeSearchRequest(BaseModel):
+    query: str = Field(..., min_length=3)
+    book_id: str
+    top_k: int = 5
+
+
+class KnowledgeSearchResult(BaseModel):
+    result_type: str
+    chunk_id: str | None = None
+    rule_id: str | None = None
+    score: float | None = None
+    content: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class KnowledgeSearchResponse(BaseModel):
+    results: list[KnowledgeSearchResult] = Field(default_factory=list)

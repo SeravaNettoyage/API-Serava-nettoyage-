@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
 from app.api.routes import router
+from app.api.routes_books import router_books
 from app.core.settings import settings
 
 def create_app() -> FastAPI:
@@ -41,6 +42,7 @@ def create_app() -> FastAPI:
         return {"message": "Serava API running"}
 
     app.include_router(router)
+    app.include_router(router_books)
     return app
 
 app = create_app()

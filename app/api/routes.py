@@ -20,7 +20,7 @@ router = APIRouter()
 llm_client = LLMClient()
 supabase_service = SupabaseService()
 translator_service = TranslatorService(llm_client)
-governor_service = GovernorService(supabase_service)
+governor_service = GovernorService(supabase_service, llm_client)
 
 api_key_scheme = APIKeyHeader(name="X-API-Key", auto_error=False)
 

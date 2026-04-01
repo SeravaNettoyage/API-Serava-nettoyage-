@@ -8,6 +8,8 @@ PROMPT_FILES = {
     "translator": "translator.txt",
     "clarifier": "clarifier.txt",
     "reformulator": "reformulator.txt",
+    "extract_rules": "extract_rules.txt",
+    "governor_knowledge": "governor_knowledge.txt",
 }
 
 

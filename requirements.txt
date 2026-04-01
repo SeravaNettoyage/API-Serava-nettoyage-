@@ -6,3 +6,6 @@ httpx==0.27.2
 python-dotenv==1.0.1
 supabase==2.7.4
 orjson==3.10.7
+
+python-multipart==0.0.9
+pypdf==5.0.1

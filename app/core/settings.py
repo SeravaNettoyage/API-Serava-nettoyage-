@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     app_debug: bool = True
     app_host: str = "0.0.0.0"
     app_port: int = 8000
-    app_version: str = "1.0.0"
+    app_version: str = "1.1.0"
     docs_enabled: bool = True
 
     api_key_header_name: str = "X-API-Key"
@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     llm_model_reformulate: str = "gpt-4.1-mini"
     llm_timeout_seconds: int = 45
     llm_temperature: float = 0.1
+    llm_model_extract: str = "gpt-4.1-mini"
+    llm_model_governor: str = "gpt-4.1-mini"
     llm_openrouter_referer: str = ""
     llm_openrouter_title: str = "Serava Governor Backend"
 
@@ -40,6 +42,10 @@ class Settings(BaseSettings):
     default_audience: str = "internal"
 
     request_log_payloads: bool = True
+
+    chunk_max_chars: int = 3500
+    chunk_overlap_chars: int = 400
+    retrieval_default_top_k: int = 5
 
     @property
     def cors_allow_origins_list(self) -> list[str]:
