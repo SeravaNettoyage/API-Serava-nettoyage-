@@ -10,7 +10,7 @@ class LLMClient:
         self.api_key = settings.llm_api_key
         self.timeout = settings.llm_timeout_seconds
 
-    def _headers(self) -> dict[str, str]:
+    async def chat_json(self, system_prompt: str, user_prompt: str, model: str) -> dict:
         if not self.api_key:
             raise RuntimeError("LLM_API_KEY manquant")
 
@@ -19,22 +19,121 @@ class LLMClient:
             "Content-Type": "application/json",
         }
 
-        if "openrouter.ai" in self.base_url:
-            if settings.llm_openrouter_referer:
-                headers["HTTP-Referer"] = settings.llm_openrouter_referer
-            if settings.llm_openrouter_title:
-                headers["X-Title"] = settings.llm_openrouter_title
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.1,
+        }
 
-        return headers
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                body = exc.response.text if exc.response is not None else "aucune réponse"
+                raise RuntimeError(
+                    f"Erreur LLM HTTP {exc.response.status_code}: {body}"
+                ) from exc
+            except httpx.HTTPError as exc:
+                raise RuntimeError(f"Erreur réseau LLM: {exc}") from exc
 
-    def _extract_content_from_chat_response(self, data: dict) -> str:
-        if not isinstance(data, dict):
-            raise RuntimeError("Réponse LLM invalide: format non JSON exploitable")
+        try:
+            data = response.json()
+        except Exception as exc:
+            raise RuntimeError(
+                f"Réponse LLM non JSON: {response.text}"
+            ) from exc
 
-        # Cas erreur standard OpenRouter
-        if "error" in data and isinstance(data["error"], dict):
-            message = data["error"].get("message", "Erreur LLM inconnue")
-            code = data["error"].get("code")
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except Exception as exc:
+            raise RuntimeError(
+                f"Structure de réponse LLM invalide: {json.dumps(data, ensure_ascii=False)}"
+            ) from exc
+
+        if isinstance(content, list):
+            text_parts = []
+            for part in content:
+                if isinstance(part, dict) and "text" in part:
+                    text_parts.append(part["text"])
+            content = "".join(text_parts)
+
+        if not isinstance(content, str) or not content.strip():
+            raise RuntimeError(f"Contenu LLM vide ou invalide: {content}")
+
+        try:
+            return json.loads(content)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Contenu JSON invalide renvoyé par le modèle: {content}"
+            ) from exc
+
+    async def chat_text(self, system_prompt: str, user_prompt: str, model: str) -> str:
+        if not self.api_key:
+            raise RuntimeError("LLM_API_KEY manquant")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.1,
+        }
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                body = exc.response.text if exc.response is not None else "aucune réponse"
+                raise RuntimeError(
+                    f"Erreur LLM HTTP {exc.response.status_code}: {body}"
+                ) from exc
+            except httpx.HTTPError as exc:
+                raise RuntimeError(f"Erreur réseau LLM: {exc}") from exc
+
+        try:
+            data = response.json()
+        except Exception as exc:
+            raise RuntimeError(
+                f"Réponse LLM non JSON: {response.text}"
+            ) from exc
+
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except Exception as exc:
+            raise RuntimeError(
+                f"Structure de réponse LLM invalide: {json.dumps(data, ensure_ascii=False)}"
+            ) from exc
+
+        if isinstance(content, list):
+            text_parts = []
+            for part in content:
+                if isinstance(part, dict) and "text" in part:
+                    text_parts.append(part["text"])
+            content = "".join(text_parts)
+
+        if not isinstance(content, str) or not content.strip():
+            raise RuntimeError(f"Contenu texte LLM vide ou invalide: {content}")
+
+        return content            code = data["error"].get("code")
             raise RuntimeError(f"Erreur OpenRouter ({code}): {message}")
 
         # Cas nominal OpenAI/OpenRouter Chat Completions
